@@ -28,26 +28,33 @@ end
     
 
 def apply_coupons(cart, coupons = nil)
-  if coupons
-    new_key = nil
-    new_value = nil
-    coupons.each do |coupon|
-      cart.reduce({}) do |memo, (key, value)|
-        if (coupon[:item] == key) && (coupon[:num] <= value[:count])
-          value[:count] -= coupon[:num]
-          new_key = key + " W/COUPON"
-          new_value = {
-            :price => coupon[:cost] / coupon[:num],
-            :clearance => value[:clearance],
-            :count => coupon[:num]
-          }
+    if coupons
+      new_key = nil
+      new_value = nil
+      coupons.each do |coupon|
+        cart.reduce({}) do |memo, (key, value)|
+          if (coupon[:item] == key) && (coupon[:num] <= value[:count])
+            value[:count] -= coupon[:num]
+            if cart.include?(key + " W/COUPON")
+                cart[key + " W/COUPON"][:count] += coupon[:num]
+                new_key = nil
+                new_value = nil
+                
+            else
+                new_key = key + " W/COUPON"
+                new_value = {
+                :price => coupon[:cost] / coupon[:num],
+                :clearance => value[:clearance],
+                :count => coupon[:num]
+                }
+            end
+          end
+        end
+        if new_key
+          cart[new_key] = new_value
         end
       end
-      if new_key
-        cart[new_key] = new_value
-      end
     end
-  end
   cart
 end
 
